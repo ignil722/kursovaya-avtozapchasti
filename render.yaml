@@ -32,4 +32,4 @@ services:
       - key: DEMO_ADMIN_EMAIL
         value: admin@autoparts.local
       - key: DEMO_ADMIN_PASSWORD
-        sync: false
+        generateValue: true
