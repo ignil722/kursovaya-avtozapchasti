@@ -61,8 +61,8 @@ python manage.py collectstatic --noinput
 
 В корне проекта находятся `render.yaml` и `build.sh`. После отправки проекта в
 GitHub выберите в Render `New → Blueprint`, подключите репозиторий и примените
-Blueprint. При создании Render попросит значение `DEMO_ADMIN_PASSWORD` — укажите
-отдельный сложный пароль, который не хранится в GitHub. PostgreSQL, миграции,
+Blueprint. Render автоматически создаст отдельный случайный `DEMO_ADMIN_PASSWORD`;
+он доступен владельцу сервиса в Environment и не хранится в GitHub. PostgreSQL, миграции,
 демонстрационные данные и запуск Gunicorn будут настроены автоматически.
 
 Репозиторий для публикации: `ignil722/kursovaya-avtozapchasti`, ветка `main`.
