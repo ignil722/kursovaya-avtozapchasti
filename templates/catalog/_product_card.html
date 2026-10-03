@@ -1,0 +1,15 @@
+<article class="product-card card h-100 border-0">
+  <a class="product-art" href="{{ product.get_absolute_url }}">
+    {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">{% else %}<span class="part-code">{{ product.category_code }}</span><span class="part-shape"><i></i><b>{{ product.category_code }}</b></span>{% endif %}
+  </a>
+  {% if not user.is_store_admin %}<form method="post" action="{% url 'catalog:toggle_wishlist' product.pk %}" class="favorite-form">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" aria-label="Избранное" class="favorite-button {% if product.pk in favorites or is_favorite %}active{% endif %}"><i class="bi {% if product.pk in favorites or is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %}"></i></button></form>{% endif %}
+  <div class="card-body p-3 p-lg-4 d-flex flex-column">
+    <div class="d-flex align-items-center justify-content-between gap-2 mb-2"><span class="mono micro text-body-secondary">{{ product.manufacturer.name }}</span><span class="stock-state {% if product.stock <= 5 %}low{% endif %}"><i></i>{% if product.stock == 0 %}нет в наличии{% elif product.stock <= 5 %}осталось {{ product.stock }}{% else %}в наличии{% endif %}</span></div>
+    <h2 class="product-title h6"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h2>
+    <div class="small text-body-secondary mt-2"><i class="bi bi-star-fill text-primary"></i> <strong class="text-body">{{ product.rating }}</strong>{% if product.sold_count %} · {{ product.sold_count }} продано{% endif %}</div>
+    <div class="d-flex align-items-end justify-content-between border-top mt-auto pt-3 gap-2">
+      <span class="product-price mono">{{ product.price|floatformat:2 }} ₽</span>
+      {% if user.is_store_admin %}<a class="btn btn-dark btn-sm" href="{% url 'staff:product_edit' product.pk %}"><i class="bi bi-pencil"></i> Изменить</a>{% elif user.is_authenticated %}<form method="post" action="{% url 'orders:cart_add' product.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-dark btn-sm" {% if product.stock == 0 %}disabled{% endif %}><i class="bi bi-plus-lg"></i> В корзину</button></form>{% else %}<a class="btn btn-dark btn-sm" href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">Войти</a>{% endif %}
+    </div>
+  </div>
+</article>

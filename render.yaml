@@ -1,0 +1,35 @@
+databases:
+  - name: kursovaya-avtozapchasti-db
+    plan: free
+    region: frankfurt
+    databaseName: autoparts_hub
+    user: autoparts_hub
+
+services:
+  - type: web
+    name: kursovaya-avtozapchasti
+    runtime: python
+    plan: free
+    region: frankfurt
+    repo: https://github.com/ignil722/kursovaya-avtozapchasti
+    branch: main
+    buildCommand: bash build.sh
+    startCommand: gunicorn autoparts_hub.wsgi:application --bind 0.0.0.0:$PORT
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kursovaya-avtozapchasti-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: SERVE_MEDIA
+        value: "1"
+      - key: DEMO_ADMIN_USERNAME
+        value: admin
+      - key: DEMO_ADMIN_EMAIL
+        value: admin@autoparts.local
+      - key: DEMO_ADMIN_PASSWORD
+        sync: false

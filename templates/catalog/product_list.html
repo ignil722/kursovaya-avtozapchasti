@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Каталог автозапчастей — AutoParts Hub{% endblock %}
+{% block content %}
+<section class="hero-section">
+  <div class="hero-grid"></div>
+  <div class="container-xxl px-3 px-lg-4 position-relative">
+    <div class="row align-items-end g-4">
+      <div class="col-lg-8"><span class="eyebrow text-primary"><i class="bi bi-circle-fill"></i> Надёжный магазин запчастей</span><h1>Нужная деталь.<br><em>Без догадок.</em></h1><p>Проверенный ассортимент, понятные характеристики и реальные остатки — всё, чтобы ваш автомобиль быстрее вернулся на дорогу.</p></div>
+      <div class="col-lg-4"><div class="counter-status"><div class="d-flex justify-content-between small fw-bold"><span>Статус каталога</span><span class="mono text-primary">ONLINE</span></div><div class="row g-2 text-center mt-3"><div class="col-4"><div><strong>{{ page_obj.paginator.count }}</strong><small>позиций</small></div></div><div class="col-4"><div><strong>1–2</strong><small>дня</small></div></div><div class="col-4"><div class="hot"><strong>24/7</strong><small>онлайн</small></div></div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="catalog" class="catalog-section container-xxl px-3 px-lg-4 py-5">
+  <div class="d-flex flex-column flex-xl-row justify-content-between gap-4 align-items-xl-end">
+    <div><span class="eyebrow">Каталог / 01</span><h2 class="section-title">Подберите свою деталь</h2></div>
+    <form method="get" action="{% url 'catalog:list' %}#catalog" class="catalog-filters row g-2 align-items-end" data-catalog-form>
+      <div class="col-sm-auto"><label class="visually-hidden" for="q">Поиск</label><div class="input-group"><span class="input-group-text"><i class="bi bi-search"></i></span><input class="form-control search-input" id="q" name="q" value="{{ filters.q }}" placeholder="Название, артикул, бренд"></div></div>
+      <div class="col-sm-auto"><select class="form-select" name="manufacturer" aria-label="Производитель"><option value="">Все бренды</option>{% for item in manufacturers %}<option value="{{ item.pk }}" {% if filters.manufacturer == item.pk|stringformat:'s' %}selected{% endif %}>{{ item.name }}</option>{% endfor %}</select></div>
+      <div class="col-sm-auto"><select class="form-select" name="sort" aria-label="Сортировка"><option value="popular" {% if filters.sort == 'popular' or not filters.sort %}selected{% endif %}>По популярности</option><option value="price_asc" {% if filters.sort == 'price_asc' %}selected{% endif %}>Сначала дешевле</option><option value="price_desc" {% if filters.sort == 'price_desc' %}selected{% endif %}>Сначала дороже</option><option value="newest" {% if filters.sort == 'newest' %}selected{% endif %}>Сначала новые</option></select></div>
+      <div class="col-sm-auto"><button class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Найти</button></div>
+      <div class="col-12"><div class="collapse {% if filters.min_price or filters.max_price %}show{% endif %}" id="priceFilter"><div class="d-flex gap-2 justify-content-end pt-2"><input class="form-control form-control-sm price-input" type="number" min="0" step="0.01" name="min_price" value="{{ filters.min_price }}" placeholder="Цена от"><input class="form-control form-control-sm price-input" type="number" min="0" step="0.01" name="max_price" value="{{ filters.max_price }}" placeholder="Цена до"></div></div><button class="btn btn-link btn-sm float-end text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#priceFilter">Диапазон цены</button></div>
+    </form>
+  </div>
+  <div class="category-pills d-flex gap-2 overflow-auto mt-4 pb-2"><a class="{% if not filters.category %}active{% endif %}" href="?q={{ filters.q|urlencode }}&sort={{ filters.sort|default:'popular' }}#catalog" data-catalog-navigation>Все детали</a>{% for item in categories %}<a class="{% if filters.category == item.slug %}active{% endif %}" href="?category={{ item.slug|urlencode }}&q={{ filters.q|urlencode }}&sort={{ filters.sort|default:'popular' }}#catalog" data-catalog-navigation>{{ item.name }}</a>{% endfor %}</div>
+  <div class="d-flex justify-content-between align-items-center mt-4"><p class="small text-body-secondary mb-0"><strong class="text-body">{{ page_obj.paginator.count }}</strong> товаров найдено</p>{% if user.is_authenticated %}<a class="small fw-bold text-decoration-none" href="{% url 'orders:history' %}">Мои заказы <i class="bi bi-arrow-right"></i></a>{% endif %}</div>
+
+  {% if page_obj %}<div class="row g-4 mt-1">{% for product in page_obj %}<div class="col-sm-6 col-xl-3">{% include 'catalog/_product_card.html' %}</div>{% endfor %}</div>{% else %}<div class="empty-state mt-4"><i class="bi bi-search"></i><h3>Ничего не найдено</h3><p>Измените параметры поиска или сбросьте фильтры.</p><a class="btn btn-dark" href="{% url 'catalog:list' %}">Сбросить</a></div>{% endif %}
+
+  {% if page_obj.has_other_pages %}
+    <nav class="mt-5" aria-label="Страницы каталога">
+      <ul class="pagination flex-wrap justify-content-center">
+        <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}"><a class="page-link" href="?page={% if page_obj.has_previous %}{{ page_obj.previous_page_number }}{% else %}1{% endif %}&q={{ filters.q|urlencode }}&category={{ filters.category|urlencode }}&manufacturer={{ filters.manufacturer }}&min_price={{ filters.min_price }}&max_price={{ filters.max_price }}&sort={{ filters.sort }}#catalog" data-catalog-navigation>Назад</a></li>
+        {% for number in page_obj.paginator.page_range %}<li class="page-item {% if page_obj.number == number %}active{% endif %}"><a class="page-link" href="?page={{ number }}&q={{ filters.q|urlencode }}&category={{ filters.category|urlencode }}&manufacturer={{ filters.manufacturer }}&min_price={{ filters.min_price }}&max_price={{ filters.max_price }}&sort={{ filters.sort }}#catalog" data-catalog-navigation {% if page_obj.number == number %}aria-current="page"{% endif %}>{{ number }}</a></li>{% endfor %}
+        <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}"><a class="page-link" href="?page={% if page_obj.has_next %}{{ page_obj.next_page_number }}{% else %}{{ page_obj.paginator.num_pages }}{% endif %}&q={{ filters.q|urlencode }}&category={{ filters.category|urlencode }}&manufacturer={{ filters.manufacturer }}&min_price={{ filters.min_price }}&max_price={{ filters.max_price }}&sort={{ filters.sort }}#catalog" data-catalog-navigation>Далее</a></li>
+      </ul>
+    </nav>
+  {% endif %}
+</section>
+{% endblock %}

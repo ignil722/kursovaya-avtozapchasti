@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Вход — AutoParts Hub{% endblock %}
+{% block content %}
+<section class="auth-shell container py-5">
+  <div class="auth-card card border-0 shadow-sm mx-auto">
+    <div class="card-body p-4 p-md-5">
+      <span class="eyebrow">Личный кабинет / 01</span>
+      <h1 class="h2 fw-800 mt-2">С возвращением</h1>
+      <p class="text-body-secondary">Войдите, чтобы открыть корзину, избранное и историю заказов.</p>
+      <form method="post" class="needs-validation mt-4" novalidate>{% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        {% for field in form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}</div>{% endfor %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+        <button class="btn btn-primary w-100 py-3 fw-bold" type="submit">Войти <i class="bi bi-arrow-right ms-1"></i></button>
+      </form>
+      <p class="small text-center mt-4 mb-0">Нет аккаунта? <a href="{% url 'accounts:register' %}">Зарегистрироваться</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}

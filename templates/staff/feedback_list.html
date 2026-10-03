@@ -1,0 +1,30 @@
+{% extends 'staff/base.html' %}
+{% block title %}Отзывы и вопросы — AutoParts Hub{% endblock %}
+{% block staff_content %}
+<div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-end gap-3">
+  <div><span class="eyebrow">Обратная связь / 01</span><h1 class="section-title">Отзывы и вопросы</h1><p class="text-body-secondary mb-0">Отвечайте покупателям от имени магазина.</p></div>
+  <div class="d-flex gap-2 flex-wrap"><span class="live-pill"><i></i> {{ unanswered_questions }} вопросов без ответа</span><span class="live-pill"><i></i> {{ unanswered_reviews }} отзывов без ответа</span></div>
+</div>
+<form method="get" class="panel-card row g-2 mt-4 align-items-end">
+  <div class="col-md-5"><label class="form-label" for="feedback-q">Поиск</label><input class="form-control" id="feedback-q" name="q" value="{{ query }}" placeholder="Товар, покупатель или текст"></div>
+  <div class="col-md-3"><label class="form-label" for="feedback-kind">Тип</label><select class="form-select" id="feedback-kind" name="kind"><option value="all" {% if selected_kind == 'all' %}selected{% endif %}>Все обращения</option><option value="questions" {% if selected_kind == 'questions' %}selected{% endif %}>Вопросы</option><option value="reviews" {% if selected_kind == 'reviews' %}selected{% endif %}>Отзывы</option></select></div>
+  <div class="col-md-3"><label class="form-label" for="feedback-status">Статус</label><select class="form-select" id="feedback-status" name="status"><option value="unanswered" {% if selected_status == 'unanswered' %}selected{% endif %}>Без ответа</option><option value="answered" {% if selected_status == 'answered' %}selected{% endif %}>Отвеченные</option><option value="all" {% if selected_status == 'all' %}selected{% endif %}>Все</option></select></div>
+  <div class="col-md-1"><button class="btn btn-primary w-100" aria-label="Найти"><i class="bi bi-search"></i></button></div>
+</form>
+
+<div class="d-grid gap-3 mt-4">
+  {% for question in questions %}<article class="feedback-admin-card" id="question-{{ question.pk }}">
+    <div class="feedback-meta"><span class="feedback-kind question"><i class="bi bi-question-circle"></i> Вопрос</span><span>{{ question.created_at|date:'d.m.Y H:i' }}</span>{% if not question.is_published %}<span class="badge text-bg-secondary">Скрыт</span>{% endif %}</div>
+    <div class="row g-4 mt-1"><div class="col-lg-5"><a class="fw-bold text-decoration-none" href="{{ question.product.get_absolute_url }}#questions">{{ question.product.name }}</a><div class="small text-body-secondary mt-1">{{ question.user.get_full_name|default:question.user.username }} · {{ question.user.email }}</div><p class="mt-3 mb-0">{{ question.text|linebreaksbr }}</p></div>
+    <div class="col-lg-7"><form method="post" action="{% url 'staff:reply_question' question.pk %}">{% csrf_token %}<label class="form-label fw-bold" for="question-reply-{{ question.pk }}">Ответ магазина</label><textarea class="form-control" id="question-reply-{{ question.pk }}" name="reply" rows="3" maxlength="2000" required>{{ question.answer }}</textarea><div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2"><label class="form-check"><input class="form-check-input" type="checkbox" name="is_published" {% if question.is_published %}checked{% endif %}> <span class="form-check-label">Показывать на сайте</span></label><button class="btn btn-sm btn-primary"><i class="bi bi-send"></i> {% if question.answer %}Обновить ответ{% else %}Ответить{% endif %}</button></div></form></div></div>
+  </article>{% endfor %}
+
+  {% for review in reviews %}<article class="feedback-admin-card" id="review-{{ review.pk }}">
+    <div class="feedback-meta"><span class="feedback-kind review"><i class="bi bi-star-fill"></i> Отзыв · {{ review.rating }}/5</span><span>{{ review.created_at|date:'d.m.Y H:i' }}</span>{% if not review.is_published %}<span class="badge text-bg-secondary">Скрыт</span>{% endif %}</div>
+    <div class="row g-4 mt-1"><div class="col-lg-5"><a class="fw-bold text-decoration-none" href="{{ review.product.get_absolute_url }}#reviews">{{ review.product.name }}</a><div class="small text-body-secondary mt-1">{{ review.user.get_full_name|default:review.user.username }} · {{ review.user.email }}</div><p class="mt-3 mb-0">{{ review.text|linebreaksbr }}</p></div>
+    <div class="col-lg-7"><form method="post" action="{% url 'staff:reply_review' review.pk %}">{% csrf_token %}<label class="form-label fw-bold" for="review-reply-{{ review.pk }}">Ответ магазина</label><textarea class="form-control" id="review-reply-{{ review.pk }}" name="reply" rows="3" maxlength="2000" required>{{ review.admin_reply }}</textarea><div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2"><label class="form-check"><input class="form-check-input" type="checkbox" name="is_published" {% if review.is_published %}checked{% endif %}> <span class="form-check-label">Показывать на сайте</span></label><button class="btn btn-sm btn-primary"><i class="bi bi-send"></i> {% if review.admin_reply %}Обновить ответ{% else %}Ответить{% endif %}</button></div></form></div></div>
+  </article>{% endfor %}
+
+  {% if not questions and not reviews %}<div class="empty-state"><i class="bi bi-chat-square-check"></i><h2>Обращений не найдено</h2><p>Измените фильтры или дождитесь новых вопросов и отзывов.</p></div>{% endif %}
+</div>
+{% endblock %}

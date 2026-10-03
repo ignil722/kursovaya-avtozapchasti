@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}Мои заказы — AutoParts Hub{% endblock %}
+{% block content %}
+<section class="container-xxl px-3 px-lg-4 py-5"><span class="eyebrow">Личный кабинет / 02</span><h1 class="section-title">Мои заказы</h1><p class="text-body-secondary">История покупок и текущий статус каждого заказа.</p>
+{% if orders %}<div class="d-grid gap-3 mt-4">{% for order in orders %}<a class="order-row" href="{% url 'orders:detail' order.pk %}"><span class="order-icon"><i class="bi bi-receipt"></i></span><span class="flex-grow-1"><span class="mono micro text-body-secondary">{{ order.number }}</span><strong>{{ order.items.count }} позиций · {{ order.created_at|date:'d.m.Y H:i' }}</strong></span><span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span><strong class="mono">{{ order.total|floatformat:2 }} ₽</strong><i class="bi bi-chevron-right text-body-secondary"></i></a>{% endfor %}</div>{% else %}<div class="empty-state mt-5"><i class="bi bi-receipt"></i><h2>Заказов пока нет</h2><p>После оформления они появятся на этой странице.</p><a class="btn btn-primary" href="{% url 'catalog:list' %}">Открыть каталог</a></div>{% endif %}</section>
+{% endblock %}

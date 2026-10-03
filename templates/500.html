@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Ошибка сервера — AutoParts Hub{% endblock %}
+{% block content %}
+<section class="container-xxl px-3 px-lg-4 py-5">
+  <div class="empty-state mx-auto">
+    <span class="eyebrow">Ошибка 500</span>
+    <h1>Что-то пошло не так</h1>
+    <p>Повторите попытку позднее. Данные вашей корзины сохранены.</p>
+    <a class="btn btn-primary" href="{% url 'catalog:list' %}">На главную</a>
+  </div>
+</section>
+{% endblock %}

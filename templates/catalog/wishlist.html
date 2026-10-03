@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block title %}Избранное — AutoParts Hub{% endblock %}
+{% block content %}
+<section class="container-xxl px-3 px-lg-4 py-5">
+  <span class="eyebrow">Личный кабинет / 01</span><h1 class="section-title">Избранные товары</h1><p class="text-body-secondary">Сохранённые детали всегда под рукой.</p>
+  {% if items %}<div class="row g-4 mt-2">{% for item in items %}{% with product=item.product is_favorite=True %}<div class="col-sm-6 col-lg-4 col-xl-3">{% include 'catalog/_product_card.html' %}</div>{% endwith %}{% endfor %}</div>{% else %}<div class="empty-state mt-5"><i class="bi bi-heart"></i><h2>Список пока пуст</h2><p>Нажмите на сердце в карточке товара, чтобы сохранить его.</p><a class="btn btn-primary" href="{% url 'catalog:list' %}">Открыть каталог</a></div>{% endif %}
+</section>
+{% endblock %}

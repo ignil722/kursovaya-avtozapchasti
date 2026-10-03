@@ -1,0 +1,249 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: catalog
+    description: Product catalog
+  - name: cart
+    description: Shopping cart
+  - name: orders
+    description: Customer orders
+  - name: reports
+    description: Administrator reports
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /products:
+    get:
+      operationId: listProducts
+      tags: [catalog]
+      summary: List catalog products
+      parameters:
+        - { name: search, in: query, required: false, schema: { type: string } }
+        - { name: category, in: query, required: false, schema: { type: string } }
+        - { name: manufacturer, in: query, required: false, schema: { type: string } }
+        - { name: minPrice, in: query, required: false, schema: { type: number, minimum: 0 } }
+        - { name: maxPrice, in: query, required: false, schema: { type: number, minimum: 0 } }
+        - { name: sort, in: query, required: false, schema: { type: string, enum: [popular, priceAsc, priceDesc, newest] } }
+      responses:
+        "200":
+          description: Products
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Product" }
+  /products/{productId}:
+    get:
+      operationId: getProduct
+      tags: [catalog]
+      summary: Get a product
+      parameters:
+        - { name: productId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Product
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Product" }
+        "404":
+          description: Product not found
+  /cart:
+    get:
+      operationId: getCart
+      tags: [cart]
+      summary: Get the current user's cart
+      responses:
+        "200":
+          description: Cart
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Cart" }
+  /cart/items:
+    post:
+      operationId: addCartItem
+      tags: [cart]
+      summary: Add a product to the cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CartItemInput" }
+      responses:
+        "200":
+          description: Updated cart
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Cart" }
+        "409":
+          description: Not enough stock
+  /cart/items/{productId}:
+    patch:
+      operationId: updateCartItem
+      tags: [cart]
+      summary: Change cart item quantity
+      parameters:
+        - { name: productId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CartItemUpdate" }
+      responses:
+        "200":
+          description: Updated cart
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Cart" }
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      summary: List the current user's orders
+      responses:
+        "200":
+          description: Orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Order" }
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Create an order from the current cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrderInput" }
+      responses:
+        "201":
+          description: Created order
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+        "409":
+          description: Not enough stock
+  /reports/summary:
+    get:
+      operationId: getReportSummary
+      tags: [reports]
+      summary: Get administrator dashboard summary
+      parameters:
+        - { name: from, in: query, required: false, schema: { type: string, format: date } }
+        - { name: to, in: query, required: false, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: Report summary
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReportSummary" }
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    Product:
+      type: object
+      required: [id, name, category, manufacturer, sku, price, stock, description, imageUrl, rating, soldCount]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        category: { type: string }
+        manufacturer: { type: string }
+        sku: { type: string }
+        price: { type: number }
+        stock: { type: integer, minimum: 0 }
+        description: { type: string }
+        imageUrl: { type: string }
+        rating: { type: number, minimum: 0, maximum: 5 }
+        soldCount: { type: integer, minimum: 0 }
+    CartItem:
+      type: object
+      required: [product, quantity, subtotal]
+      properties:
+        product: { $ref: "#/components/schemas/Product" }
+        quantity: { type: integer, minimum: 1 }
+        subtotal: { type: number }
+    Cart:
+      type: object
+      required: [items, total, itemCount]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/CartItem" }
+        total: { type: number }
+        itemCount: { type: integer, minimum: 0 }
+    CartItemInput:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId: { type: integer }
+        quantity: { type: integer, minimum: 1 }
+    CartItemUpdate:
+      type: object
+      required: [quantity]
+      properties:
+        quantity: { type: integer, minimum: 1 }
+    Order:
+      type: object
+      required: [id, createdAt, status, items, total]
+      properties:
+        id: { type: integer }
+        createdAt: { type: string, format: date-time }
+        status: { type: string, enum: [created, paid, delivered, cancelled] }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/CartItem" }
+        total: { type: number }
+    OrderInput:
+      type: object
+      required: [paymentMethod, deliveryAddress]
+      properties:
+        paymentMethod: { type: string, enum: [card, cash] }
+        deliveryAddress: { type: string, minLength: 5 }
+    ReportSummary:
+      type: object
+      required: [revenue, orders, lowStock, topProducts, unpopularProducts]
+      properties:
+        revenue: { type: number }
+        orders: { type: integer }
+        lowStock: { type: integer }
+        topProducts:
+          type: array
+          items: { $ref: "#/components/schemas/ReportProduct" }
+        unpopularProducts:
+          type: array
+          items: { $ref: "#/components/schemas/ReportProduct" }
+    ReportProduct:
+      type: object
+      required: [name, quantity, revenue]
+      properties:
+        name: { type: string }
+        quantity: { type: integer }
+        revenue: { type: number }
+

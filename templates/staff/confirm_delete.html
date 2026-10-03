@@ -1,0 +1,3 @@
+{% extends 'staff/base.html' %}
+{% block title %}Удаление — AutoParts Hub{% endblock %}
+{% block staff_content %}<span class="eyebrow text-danger">Опасное действие</span><h1 class="section-title">Удалить объект?</h1><div class="panel-card mt-4"><p>Вы собираетесь удалить <strong>{{ object }}</strong>. Связанные с заказами данные удалить нельзя.</p><form method="post">{% csrf_token %}<button class="btn btn-danger" type="submit">Удалить</button><a class="btn btn-outline-secondary" href="{% url cancel_url %}">Отмена</a></form></div>{% endblock %}

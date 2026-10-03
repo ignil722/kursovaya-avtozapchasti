@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Доступ запрещён — AutoParts Hub{% endblock %}
+{% block content %}
+<section class="container-xxl px-3 px-lg-4 py-5">
+  <div class="empty-state mx-auto">
+    <span class="eyebrow">Ошибка 403</span>
+    <h1>Недостаточно прав</h1>
+    <p>Этот раздел доступен только пользователям с необходимыми полномочиями.</p>
+    <a class="btn btn-primary" href="{% url 'catalog:list' %}">Вернуться в каталог</a>
+  </div>
+</section>
+{% endblock %}

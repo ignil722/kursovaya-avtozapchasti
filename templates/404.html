@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Страница не найдена — AutoParts Hub{% endblock %}
+{% block content %}
+<section class="container-xxl px-3 px-lg-4 py-5">
+  <div class="empty-state mx-auto">
+    <span class="eyebrow">Ошибка 404</span>
+    <h1>Такой страницы нет</h1>
+    <p>Возможно, адрес изменился или страница была удалена.</p>
+    <a class="btn btn-primary" href="{% url 'catalog:list' %}">Перейти в каталог</a>
+  </div>
+</section>
+{% endblock %}

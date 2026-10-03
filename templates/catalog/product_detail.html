@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} — AutoParts Hub{% endblock %}
+{% block content %}
+<section class="container-xxl px-3 px-lg-4 py-4 py-lg-5">
+  <nav aria-label="breadcrumb"><ol class="breadcrumb small"><li class="breadcrumb-item"><a href="{% url 'catalog:list' %}#catalog">Каталог</a></li><li class="breadcrumb-item"><a href="{% url 'catalog:list' %}?category={{ product.category.slug|urlencode }}#catalog">{{ product.category.name }}</a></li><li class="breadcrumb-item active">{{ product.sku }}</li></ol></nav>
+  <div class="row g-4 g-lg-5 mt-1 align-items-start">
+    <div class="col-lg-6"><div class="product-detail-art">{% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}<span class="part-code">{{ product.category_code }}</span><span class="part-shape large"><i></i><b>{{ product.category_code }}</b></span>{% endif %}</div></div>
+    <div class="col-lg-6">
+      <span class="eyebrow text-primary">{{ product.manufacturer.name }} · {{ product.sku }}</span>
+      <h1 class="display-5 fw-800 mt-2">{{ product.name }}</h1>
+      <div class="d-flex gap-3 align-items-center my-3"><span><i class="bi bi-star-fill text-primary"></i> <strong>{{ product.rating }}</strong></span><span class="badge rounded-pill text-bg-light">{{ product.category.name }}</span></div>
+      <p class="lead-copy">{{ product.description|linebreaksbr }}</p>
+      <div class="detail-buy-box mt-4">
+        <div><span class="display-6 mono">{{ product.price|floatformat:2 }} ₽</span><div class="stock-state mt-2 {% if product.stock <= 5 %}low{% endif %}"><i></i>{% if product.stock %}На складе {{ product.stock }} шт.{% else %}Нет в наличии{% endif %}</div></div>
+        <div class="d-flex gap-2">
+          {% if user.is_store_admin %}
+            <a class="btn btn-outline-secondary btn-lg" href="{% url 'staff:product_edit' product.pk %}"><i class="bi bi-pencil-square"></i> Редактировать</a>
+          {% elif user.is_authenticated %}
+            <form method="post" action="{% url 'catalog:toggle_wishlist' product.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-outline-secondary btn-lg" aria-label="Избранное"><i class="bi {% if is_favorite %}bi-heart-fill text-primary{% else %}bi-heart{% endif %}"></i></button></form>
+            <form method="post" action="{% url 'orders:cart_add' product.pk %}">{% csrf_token %}<button class="btn btn-primary btn-lg" {% if not product.stock %}disabled{% endif %}><i class="bi bi-cart-plus"></i> В корзину</button></form>
+          {% else %}<a class="btn btn-primary btn-lg" href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">Войти для покупки</a>{% endif %}
+        </div>
+      </div>
+      <dl class="row specs mt-4"><dt class="col-5">Артикул</dt><dd class="col-7 mono">{{ product.sku }}</dd><dt class="col-5">Производитель</dt><dd class="col-7">{{ product.manufacturer.name }}, {{ product.manufacturer.country }}</dd><dt class="col-5">Категория</dt><dd class="col-7">{{ product.category.name }}</dd></dl>
+    </div>
+  </div>
+  <div class="row g-4 mt-5 pt-4 border-top">
+    <div class="col-lg-6" id="reviews">
+      <div class="d-flex justify-content-between align-items-end gap-3"><div><span class="eyebrow">Отзывы / {{ reviews|length }}</span><h2 class="section-title">Опыт покупателей</h2></div>{% if user.is_store_admin %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'staff:feedback' %}?kind=reviews&status=all">Управлять</a>{% endif %}</div>
+      {% if user.is_authenticated and not user.is_store_admin %}<form class="panel-card mt-3" method="post" action="{% url 'catalog:submit_review' product.slug %}">{% csrf_token %}<h3 class="h6 fw-bold">Оставить или изменить отзыв</h3>{% for field in review_form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>{% endfor %}<button class="btn btn-primary" type="submit">Сохранить отзыв</button></form>{% elif not user.is_authenticated %}<div class="panel-card mt-3 small">Чтобы оставить отзыв, <a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}#reviews">войдите в аккаунт</a>.</div>{% endif %}
+      <div class="d-grid gap-3 mt-3">{% for review in reviews %}<article class="customer-feedback"><div class="d-flex justify-content-between gap-3"><strong>{{ review.user.get_full_name|default:review.user.username }}</strong><span class="text-primary text-nowrap"><i class="bi bi-star-fill"></i> {{ review.rating }}/5</span></div><small>{{ review.created_at|date:'d.m.Y' }}</small><p>{{ review.text|linebreaksbr }}</p>{% if review.admin_reply %}<div class="store-reply"><strong><i class="bi bi-lightning-charge-fill"></i> Ответ AutoParts Hub</strong><p>{{ review.admin_reply|linebreaksbr }}</p></div>{% endif %}</article>{% empty %}<div class="empty-feedback">Отзывов пока нет — станьте первым.</div>{% endfor %}</div>
+    </div>
+    <div class="col-lg-6" id="questions">
+      <div class="d-flex justify-content-between align-items-end gap-3"><div><span class="eyebrow">Вопросы / {{ questions|length }}</span><h2 class="section-title">Вопросы о товаре</h2></div>{% if user.is_store_admin %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'staff:feedback' %}?kind=questions&status=all">Управлять</a>{% endif %}</div>
+      {% if user.is_authenticated and not user.is_store_admin %}<form class="panel-card mt-3" method="post" action="{% url 'catalog:submit_question' product.slug %}">{% csrf_token %}<h3 class="h6 fw-bold">Задать вопрос магазину</h3>{% for field in question_form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>{% endfor %}<button class="btn btn-primary" type="submit">Отправить вопрос</button></form>{% elif not user.is_authenticated %}<div class="panel-card mt-3 small">Чтобы задать вопрос, <a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}#questions">войдите в аккаунт</a>.</div>{% endif %}
+      <div class="d-grid gap-3 mt-3">{% for question in questions %}<article class="customer-feedback"><div class="d-flex justify-content-between gap-3"><strong>{{ question.user.get_full_name|default:question.user.username }}</strong><small>{{ question.created_at|date:'d.m.Y' }}</small></div><p>{{ question.text|linebreaksbr }}</p>{% if question.answer %}<div class="store-reply"><strong><i class="bi bi-lightning-charge-fill"></i> Ответ AutoParts Hub</strong><p>{{ question.answer|linebreaksbr }}</p></div>{% else %}<span class="badge text-bg-light">Магазин готовит ответ</span>{% endif %}</article>{% empty %}<div class="empty-feedback">Вопросов пока нет.</div>{% endfor %}</div>
+    </div>
+  </div>
+  {% if related %}<div class="mt-5 pt-4 border-top"><span class="eyebrow">Вам также подойдёт</span><h2 class="section-title">Похожие товары</h2><div class="row g-4 mt-1">{% for product in related %}<div class="col-sm-6 col-lg-3">{% include 'catalog/_product_card.html' %}</div>{% endfor %}</div></div>{% endif %}
+</section>
+{% endblock %}

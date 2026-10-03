@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Регистрация — AutoParts Hub{% endblock %}
+{% block content %}
+<section class="auth-shell container py-5">
+  <div class="auth-card card border-0 shadow-sm mx-auto">
+    <div class="card-body p-4 p-md-5">
+      <span class="eyebrow">Новый покупатель / 02</span>
+      <h1 class="h2 fw-800 mt-2">Создать аккаунт</h1>
+      <p class="text-body-secondary">Все поля проверяются на сервере. Email используется для уведомлений о заказах.</p>
+      <form method="post" class="needs-validation mt-4" novalidate>{% csrf_token %}
+        {% for field in form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<div class="form-text">{{ field.help_text|safe }}</div>{% endif %}{% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}</div>{% endfor %}
+        <button class="btn btn-primary w-100 py-3 fw-bold" type="submit">Зарегистрироваться</button>
+      </form>
+      <p class="small text-center mt-4 mb-0">Уже зарегистрированы? <a href="{% url 'accounts:login' %}">Войти</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}

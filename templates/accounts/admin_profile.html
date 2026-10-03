@@ -1,0 +1,33 @@
+{% extends 'staff/base.html' %}
+{% block title %}Профиль администратора — AutoParts Hub{% endblock %}
+{% block staff_content %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-end gap-3">
+  <div><span class="eyebrow">Администратор / Профиль</span><h1 class="section-title">Настройки аккаунта</h1><p class="text-body-secondary mb-0">Измените фотографию, данные для входа и пароль.</p></div>
+  <span class="live-pill"><i></i> {{ request.user.get_role_display }}</span>
+</div>
+<div class="row g-4 mt-2">
+  <div class="col-xl-7">
+    <div class="panel-card">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="profile-avatar profile-avatar-lg">{% if request.user.avatar %}<img src="{{ request.user.avatar.url }}" alt="Фото администратора">{% else %}<span>{{ request.user.first_name|default:request.user.username|slice:':1'|upper }}</span>{% endif %}</div>
+        <div><h2 class="h5 fw-bold mb-1">{{ request.user.get_full_name|default:request.user.username }}</h2><div class="text-body-secondary small">{{ request.user.email }}</div></div>
+      </div>
+      <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+        {% csrf_token %}{{ profile_form.non_field_errors }}
+        {% for field in profile_form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}{% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}</div>{% endfor %}
+        <button class="btn btn-primary" type="submit" name="save_profile"><i class="bi bi-check2-circle"></i> Сохранить профиль</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-xl-5">
+    <div class="panel-card">
+      <span class="eyebrow">Безопасность</span><h2 class="h5 fw-bold mt-2">Сменить пароль</h2><p class="small text-body-secondary">После изменения текущая сессия останется активной.</p>
+      <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}{{ password_form.non_field_errors }}
+        {% for field in password_form %}<div class="mb-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<div class="form-text">{{ field.help_text|safe }}</div>{% endif %}{% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}</div>{% endfor %}
+        <button class="btn btn-dark" type="submit" name="change_password"><i class="bi bi-shield-lock"></i> Изменить пароль</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+modules = ["python-3.12"]
+
+run = "python manage.py migrate && python manage.py runserver 0.0.0.0:$PORT"
+
+[deployment]
+run = ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn autoparts_hub.wsgi:application --bind 0.0.0.0:$PORT"]
+deploymentTarget = "autoscale"
+
+[workflows]
+runButton = "Project"

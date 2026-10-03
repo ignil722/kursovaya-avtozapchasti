@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-xxl px-3 px-lg-4 py-4 py-lg-5"><div class="row g-4">
+  <aside class="col-lg-3 col-xl-2"><div class="staff-sidebar">
+    <a class="staff-profile" href="{% url 'accounts:admin_profile' %}"><span class="profile-avatar">{% if request.user.avatar %}<img src="{{ request.user.avatar.url }}" alt="">{% else %}<span>{{ request.user.first_name|default:request.user.username|slice:':1'|upper }}</span>{% endif %}</span><span><strong>{{ request.user.first_name|default:request.user.username }}</strong><small>{{ request.user.username }}</small></span></a>
+    <div class="d-grid gap-1 mt-3"><a href="{% url 'staff:dashboard' %}"><i class="bi bi-speedometer2"></i> Обзор</a><a href="{% url 'staff:product_list' %}"><i class="bi bi-box-seam"></i> Товары</a><a href="{% url 'staff:category_list' %}"><i class="bi bi-tags"></i> Категории</a><a href="{% url 'staff:manufacturer_list' %}"><i class="bi bi-buildings"></i> Производители</a><a href="{% url 'staff:stock_adjustment' %}"><i class="bi bi-boxes"></i> Склад</a><a href="{% url 'staff:order_list' %}"><i class="bi bi-receipt-cutoff"></i> Заказы</a><a href="{% url 'staff:feedback' %}"><i class="bi bi-chat-square-text"></i> Отзывы и вопросы</a><a href="{% url 'staff:reports' %}"><i class="bi bi-file-earmark-bar-graph"></i> Отчёты</a><a href="{% url 'accounts:admin_profile' %}"><i class="bi bi-person-gear"></i> Профиль</a><a href="{% url 'admin:index' %}"><i class="bi bi-gear"></i> Django admin</a></div>
+  </div></aside>
+  <div class="col-lg-9 col-xl-10">{% block staff_content %}{% endblock %}</div>
+</div></div>
+{% endblock %}
